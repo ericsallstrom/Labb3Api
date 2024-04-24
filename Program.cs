@@ -88,9 +88,9 @@ namespace Labb3Api_V2
             });
 
             // GET - Hämta alla intressen som är kopplade till en specifik person
-            app.MapGet("/persons/{personId:int}", async (int personId, ApplicationDbContext context) =>
+            app.MapGet("/persons/{personId:int}/hobbies", async (int personId, ApplicationDbContext context) =>
             {
-                var specifikPersonHobbies = await context.PersonHobbies
+                var personHobbies = await context.PersonHobbies
                 .Where(ph => ph.FkPersonId == personId)
                 .Include(ph => ph.Hobby)
                 .ThenInclude(h => h.WebLinks)
@@ -106,16 +106,34 @@ namespace Labb3Api_V2
                     }).ToList()
                 }).ToListAsync();
 
-                if (specifikPersonHobbies == null || specifikPersonHobbies.Count == 0)
+                if (personHobbies == null || personHobbies.Count == 0)
                 {
                     return Results.NotFound($"Person with ID: {personId} not found in the database");
                 }
 
-                return Results.Ok(specifikPersonHobbies);
+                return Results.Ok(personHobbies);
             });
 
             // GET - Hämta alla länkar som är kopplade till en specifik person
+            app.MapGet("/persons/{personId:int}/weblinks", async (int personId, ApplicationDbContext context) =>
+            {
+                var personWebLinks = await context.WebLinks
+                .Where(wl => wl.Hobby.PersonHobbies.Any(ph => ph.FkPersonId == personId))
+                .Include(wl => wl.Hobby)
+                .Select(wl => new WebLinkDTO
+                {
+                    WebLinkId = wl.WebLinkId,
+                    Url = wl.Url,
+                    HobbyTitle = wl.Hobby.Title
+                }).ToListAsync();
 
+                if (personWebLinks == null || personWebLinks.Count == 0)
+                {
+                    return Results.NotFound($"Person with ID: {personId} has no linked weblinks");
+                }
+
+                return Results.Ok(personWebLinks);          
+            });
 
             // POST - Koppla en person till ett nytt intresse
             app.MapPost("/persons/{personId:int}/hobbies", async (int personId, Hobby hobby, ApplicationDbContext context) =>

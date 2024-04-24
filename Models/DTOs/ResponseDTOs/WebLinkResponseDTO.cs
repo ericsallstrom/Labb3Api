@@ -3,6 +3,6 @@
     public class WebLinkResponseDTO
     {
         public int WebLinkId { get; set; }
-        public string Url { get; set; }
+        public string Url { get; set; }        
     }
 }
