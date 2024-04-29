@@ -79,7 +79,8 @@ namespace Labb3Api_V2
                         WebLinks = ph.Hobby.WebLinks.Select(wl => new WebLinkDTO
                         {
                             WebLinkId = wl.WebLinkId,
-                            Url = wl.Url
+                            Url = wl.Url,
+                            HobbyTitle = wl.Hobby.Title
                         }).ToList(),
                     }).ToList(),
                 }).ToList();
